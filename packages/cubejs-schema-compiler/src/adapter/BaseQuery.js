@@ -1492,6 +1492,9 @@ export class BaseQuery {
       if (m.expressionName && !collectedMeasures.length && !m.isMemberExpression) {
         throw new UserError(`Subquery dimension ${m.expressionName} should reference at least one measure`);
       }
+      if (!collectedMeasures.length && m.isMemberExpression && m.query.allCubeNames.length > 1 && m.measureSql() === "COUNT(*)") {
+        throw new UserError('COUNT(*) is referenced in a view where `count` is not defined');
+      }
       return [m.measure, collectedMeasures];
     }));
   }
