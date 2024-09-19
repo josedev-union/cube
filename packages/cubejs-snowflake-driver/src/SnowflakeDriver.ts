@@ -128,7 +128,14 @@ interface SnowflakeDriverExportGCS {
   credentials: any,
 }
 
-export type SnowflakeDriverExportBucket = SnowflakeDriverExportAWS | SnowflakeDriverExportGCS;
+interface SnowflakeDriverExportAzure {
+  bucketType: 'azure',
+  bucketName: string,
+  keyId: string,
+  credentials: any,
+}
+
+export type SnowflakeDriverExportBucket = SnowflakeDriverExportAWS | SnowflakeDriverExportGCS | SnowflakeDriverExportAzure;
 
 interface SnowflakeDriverOptions {
   account: string,
@@ -295,8 +302,17 @@ export class SnowflakeDriver extends BaseDriver implements DriverInterface {
       };
     }
 
+    if (bucketType === 'azure') {
+      return {
+        bucketType,
+        bucketName: getEnv('dbExportBucket', { dataSource }),
+        keyId: getEnv('dbExportBucketAzureKey', { dataSource }),
+        credentials: getEnv('dbExportAzureCredentials', { dataSource }),
+      };
+    }
+
     throw new Error(
-      `Unsupported EXPORT_BUCKET_TYPE, supported: ${['s3', 'gcs'].join(',')}`
+      `Unsupported EXPORT_BUCKET_TYPE, supported: ${['s3', 'gcs', 'azure'].join(',')}`
     );
   }
 
@@ -308,7 +324,7 @@ export class SnowflakeDriver extends BaseDriver implements DriverInterface {
   ): SnowflakeDriverExportBucket | undefined {
     const bucketType = getEnv('dbExportBucketType', {
       dataSource,
-      supported: ['s3', 'gcs'],
+      supported: ['s3', 'gcs', 'azure'],
     });
     if (bucketType) {
       const exportBucket = this.createExportBucket(
