@@ -128,14 +128,25 @@ interface SnowflakeDriverExportGCS {
   credentials: any,
 }
 
-interface SnowflakeDriverExportAzure {
+interface SnowflakeDriverExportAzureBase {
   bucketType: 'azure',
   bucketName: string,
-  keyId: string,
-  credentials: any,
 }
 
-export type SnowflakeDriverExportBucket = SnowflakeDriverExportAWS | SnowflakeDriverExportGCS | SnowflakeDriverExportAzure;
+interface SnowflakeDriverExportAzureByKey extends SnowflakeDriverExportAzureBase {
+  accountKey: string,
+  sasToken?: string,
+}
+
+interface SnowflakeDriverExportAzureByToken extends SnowflakeDriverExportAzureBase {
+  accountKey?: string,
+  sasToken: string,
+}
+
+type SnowflakeDriverExportAzure = SnowflakeDriverExportAzureByKey | SnowflakeDriverExportAzureByToken;
+
+export type SnowflakeDriverExportBucket = SnowflakeDriverExportAWS | SnowflakeDriverExportGCS
+  | SnowflakeDriverExportAzure;
 
 interface SnowflakeDriverOptions {
   account: string,
@@ -306,8 +317,8 @@ export class SnowflakeDriver extends BaseDriver implements DriverInterface {
       return {
         bucketType,
         bucketName: getEnv('dbExportBucket', { dataSource }),
-        keyId: getEnv('dbExportBucketAzureKey', { dataSource }),
-        credentials: getEnv('dbExportAzureCredentials', { dataSource }),
+        accountKey: getEnv('dbExportBucketAzureKey', { dataSource }),
+        sasToken: getEnv('dbExportAzureSasToken', { dataSource }),
       };
     }
 
