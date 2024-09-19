@@ -595,6 +595,10 @@ export class SnowflakeDriver extends BaseDriver implements DriverInterface {
           <SnowflakeDriverExportGCS> this.config.exportBucket
         ).integrationName;
         break;
+      case 'azure':
+        // Seems that Azure doesn't provide any configurable options.
+        // @see https://docs.snowflake.com/en/user-guide/data-unload-azure
+        break;
       default:
         throw new Error('Unsupported export bucket type.');
     }
